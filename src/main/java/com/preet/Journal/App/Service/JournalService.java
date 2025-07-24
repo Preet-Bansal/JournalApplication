@@ -6,6 +6,7 @@ import com.preet.Journal.App.entity.User;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,12 +22,20 @@ public class JournalService {
     private UserService userService;
 
     //saving entries
+    @Transactional
     public void createEntry(JournalEntity journalEntity, String username){
-        User user=userService.findByusername(username);
-        journalEntity.setDate(LocalDateTime.now());
-        JournalEntity saved= journalRepo.save(journalEntity);
-        user.getJournalEntityList().add(saved);
-        userService.createUser(user);
+        try {
+            User user = userService.findByusername(username);
+            journalEntity.setDate(LocalDateTime.now());
+            JournalEntity saved = journalRepo.save(journalEntity);
+            user.getJournalEntityList().add(saved);
+            userService.createUser(user);
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+            throw new RuntimeException("something went wrong while saving entry", e);
+        }
     }
 
     //getting all entries
